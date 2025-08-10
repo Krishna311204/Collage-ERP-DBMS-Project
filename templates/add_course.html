@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Course{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-plus-circle"></i> Add New Course</h3>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('add_course') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="course_code" class="form-label">Course Code *</label>
+                                <input type="text" class="form-control" id="course_code" name="course_code" 
+                                       required pattern="[A-Z0-9]{3,10}" 
+                                       placeholder="e.g., CS101, MATH201">
+                                <div class="form-text">3-10 characters, letters and numbers only</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="course_name" class="form-label">Course Name *</label>
+                                <input type="text" class="form-control" id="course_name" name="course_name" 
+                                       required placeholder="e.g., Introduction to Computer Science">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="department" class="form-label">Department *</label>
+                                <select class="form-select" id="department" name="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Mathematics">Mathematics</option>
+                                    <option value="Physics">Physics</option>
+                                    <option value="Chemistry">Chemistry</option>
+                                    <option value="Biology">Biology</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Arts">Arts</option>
+                                    <option value="Literature">Literature</option>
+                                    <option value="History">History</option>
+                                    <option value="Economics">Economics</option>
+                                    <option value="Psychology">Psychology</option>
+                                    <option value="Sociology">Sociology</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="credits" class="form-label">Credits *</label>
+                                <select class="form-select" id="credits" name="credits" required>
+                                    <option value="">Select Credits</option>
+                                    <option value="1">1 Credit</option>
+                                    <option value="2">2 Credits</option>
+                                    <option value="3">3 Credits</option>
+                                    <option value="4">4 Credits</option>
+                                    <option value="5">5 Credits</option>
+                                    <option value="6">6 Credits</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="faculty_id" class="form-label">Assigned Faculty *</label>
+                            <select class="form-select" id="faculty_id" name="faculty_id" required>
+                                <option value="">Select Faculty Member</option>
+                                {% for faculty_member in faculty %}
+                                <option value="{{ faculty_member.id }}">
+                                    {{ faculty_member.username }} 
+                                    {% if faculty_member.email %}
+                                        ({{ faculty_member.email }})
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Select the faculty member who will teach this course</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin_courses') }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left"></i> Back to Courses
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Add Course
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-generate course code from course name
+document.getElementById('course_name').addEventListener('input', function() {
+    const courseName = this.value;
+    const courseCodeField = document.getElementById('course_code');
+    
+    if (courseName && !courseCodeField.value) {
+        // Generate a simple course code from the first letters of words
+        const words = courseName.split(' ').filter(word => word.length > 0);
+        if (words.length >= 2) {
+            const code = words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join('') + 
+                        Math.floor(Math.random() * 100 + 10);
+            courseCodeField.value = code;
+        }
+    }
+});
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const courseCode = document.getElementById('course_code').value;
+    const courseName = document.getElementById('course_name').value;
+    
+    if (courseCode.length < 3) {
+        e.preventDefault();
+        alert('Course code must be at least 3 characters long');
+        return;
+    }
+    
+    if (courseName.length < 5) {
+        e.preventDefault();
+        alert('Course name must be at least 5 characters long');
+        return;
+    }
+});
+</script>
+{% endblock %}

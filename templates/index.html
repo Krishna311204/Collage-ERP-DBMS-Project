@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - College Attendance DBMS{% endblock %}
+
+{% block content %}
+<div class="page-header text-center">
+    <div class="container">
+        <h1 class="page-title">College Attendance Management System</h1>
+        <p class="page-subtitle">Streamline attendance tracking, student management, and academic reporting</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('login') }}" class="btn btn-light btn-lg mt-3">
+                <i class="fas fa-sign-in-alt me-2"></i>Get Started
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-md-4 text-center mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                    <h4 class="card-title">Student Management</h4>
+                    <p class="card-text">Efficiently manage student records, enrollments, and personal information with our comprehensive database system.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-chalkboard-teacher fa-3x text-success mb-3"></i>
+                    <h4 class="card-title">Attendance Tracking</h4>
+                    <p class="card-text">Real-time attendance monitoring with easy-to-use interfaces for faculty to mark and track student attendance.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                    <h4 class="card-title">Analytics & Reports</h4>
+                    <p class="card-text">Generate comprehensive reports and analytics to monitor attendance patterns and academic performance.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-primary">
+                        <i class="fas fa-shield-alt me-2"></i>Secure & Reliable
+                    </h3>
+                    <p class="card-text">Our system provides secure authentication and role-based access control to ensure data privacy and system integrity.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Multi-role user management</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Secure password hashing</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Session management</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-success">
+                        <i class="fas fa-mobile-alt me-2"></i>Responsive Design
+                    </h3>
+                    <p class="card-text">Access the system from any device with our responsive web interface that works seamlessly on desktop, tablet, and mobile.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Mobile-friendly interface</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Cross-browser compatibility</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Modern UI/UX design</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-primary mb-4">Ready to Get Started?</h3>
+                    <p class="card-text mb-4">Join thousands of educational institutions that trust our system for their attendance management needs.</p>
+                    {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login Now
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

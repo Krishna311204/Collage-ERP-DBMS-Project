@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Take Attendance - College Attendance DBMS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-clipboard-check me-3"></i>Take Attendance
+        </h1>
+        <p class="page-subtitle">{{ course.course_name }} ({{ course.course_code }}) - {{ moment().format('dddd, MMMM Do YYYY') }}</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Student Attendance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if students %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Name</th>
+                                        <th>Department</th>
+                                        <th>Year</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    <tr data-student-id="{{ student.id }}">
+                                        <td>
+                                            <span class="badge bg-secondary">{{ student.student_id }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ student.first_name }} {{ student.last_name }}</strong>
+                                        </td>
+                                        <td>{{ student.department }}</td>
+                                        <td>Year {{ student.year }}</td>
+                                        <td>
+                                            <span class="attendance-status" id="status-{{ student.id }}">
+                                                {% if today_attendance[student.id] %}
+                                                    {% if today_attendance[student.id] == 'present' %}
+                                                        <span class="badge bg-success">Present</span>
+                                                    {% elif today_attendance[student.id] == 'absent' %}
+                                                        <span class="badge bg-danger">Absent</span>
+                                                    {% elif today_attendance[student.id] == 'late' %}
+                                                        <span class="badge bg-warning">Late</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Not Marked</span>
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-success mark-attendance" 
+                                                        data-status="present" data-student-id="{{ student.id }}">
+                                                    <i class="fas fa-check"></i> Present
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-warning mark-attendance" 
+                                                        data-status="late" data-student-id="{{ student.id }}">
+                                                    <i class="fas fa-clock"></i> Late
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger mark-attendance" 
+                                                        data-status="absent" data-student-id="{{ student.id }}">
+                                                    <i class="fas fa-times"></i> Absent
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No students found</h5>
+                            <p class="text-muted">There are no students enrolled in this course.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Attendance Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h4 class="text-success" id="present-count">
+                                    {{ students|selectattr('id', 'in', today_attendance.values()|select('equalto', 'present')|list)|list|length }}
+                                </h4>
+                                <small class="text-muted">Present</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h4 class="text-warning" id="late-count">
+                                    {{ students|selectattr('id', 'in', today_attendance.values()|select('equalto', 'late')|list)|list|length }}
+                                </h4>
+                                <small class="text-muted">Late</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-danger" id="absent-count">
+                                {{ students|selectattr('id', 'in', today_attendance.values()|select('equalto', 'absent')|list)|list|length }}
+                            </h4>
+                            <small class="text-muted">Absent</small>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" id="mark-all-present">
+                            <i class="fas fa-check-double me-2"></i>Mark All Present
+                        </button>
+                        <button class="btn btn-outline-secondary" id="clear-all">
+                            <i class="fas fa-eraser me-2"></i>Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Course Info
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Course:</strong> {{ course.course_name }}</p>
+                    <p><strong>Code:</strong> {{ course.course_code }}</p>
+                    <p><strong>Department:</strong> {{ course.department }}</p>
+                    <p><strong>Credits:</strong> {{ course.credits }}</p>
+                    <p><strong>Date:</strong> {{ moment().format('MMM DD, YYYY') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.attendance-status .badge {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+}
+
+.btn-group .btn {
+    margin-right: 2px;
+    font-size: 0.8rem;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Mark attendance for individual students
+    document.querySelectorAll('.mark-attendance').forEach(button => {
+        button.addEventListener('click', function() {
+            const studentId = this.dataset.studentId;
+            const status = this.dataset.status;
+            
+            markAttendance(studentId, status);
+        });
+    });
+    
+    // Mark all present
+    document.getElementById('mark-all-present').addEventListener('click', function() {
+        if (confirm('Mark all students as present?')) {
+            document.querySelectorAll('[data-student-id]').forEach(row => {
+                const studentId = row.dataset.studentId;
+                markAttendance(studentId, 'present');
+            });
+        }
+    });
+    
+    // Clear all attendance
+    document.getElementById('clear-all').addEventListener('click', function() {
+        if (confirm('Clear all attendance marks?')) {
+            document.querySelectorAll('[data-student-id]').forEach(row => {
+                const studentId = row.dataset.studentId;
+                clearAttendance(studentId);
+            });
+        }
+    });
+    
+    function markAttendance(studentId, status) {
+        fetch('/faculty/mark_attendance', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                student_id: studentId,
+                course_id: {{ course.id }},
+                status: status,
+                date: today
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateAttendanceDisplay(studentId, status);
+                updateSummary();
+            } else {
+                alert('Error marking attendance: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error marking attendance');
+        });
+    }
+    
+    function clearAttendance(studentId) {
+        const statusElement = document.getElementById(`status-${studentId}`);
+        statusElement.innerHTML = '<span class="badge bg-secondary">Not Marked</span>';
+        updateSummary();
+    }
+    
+    function updateAttendanceDisplay(studentId, status) {
+        const statusElement = document.getElementById(`status-${studentId}`);
+        let badgeClass = '';
+        let statusText = '';
+        
+        switch(status) {
+            case 'present':
+                badgeClass = 'bg-success';
+                statusText = 'Present';
+                break;
+            case 'late':
+                badgeClass = 'bg-warning';
+                statusText = 'Late';
+                break;
+            case 'absent':
+                badgeClass = 'bg-danger';
+                statusText = 'Absent';
+                break;
+        }
+        
+        statusElement.innerHTML = `<span class="badge ${badgeClass}">${statusText}</span>`;
+    }
+    
+    function updateSummary() {
+        const presentCount = document.querySelectorAll('.badge.bg-success').length;
+        const lateCount = document.querySelectorAll('.badge.bg-warning').length;
+        const absentCount = document.querySelectorAll('.badge.bg-danger').length;
+        
+        document.getElementById('present-count').textContent = presentCount;
+        document.getElementById('late-count').textContent = lateCount;
+        document.getElementById('absent-count').textContent = absentCount;
+    }
+});
+</script>
+{% endblock %}

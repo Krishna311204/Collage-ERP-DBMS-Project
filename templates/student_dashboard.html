@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - College Attendance DBMS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-user-graduate me-3"></i>Student Dashboard
+        </h1>
+        <p class="page-subtitle">Welcome back, {{ student.first_name }}! Here's your attendance overview.</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Student Info Card -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-circle fa-3x mb-3"></i>
+                    <h4>{{ student.first_name }} {{ student.last_name }}</h4>
+                    <p class="mb-2">{{ student.student_id }}</p>
+                    <span class="badge bg-light text-dark">{{ student.department }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8 mb-3">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Personal Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Email:</strong> {{ student.email }}</p>
+                            <p><strong>Phone:</strong> {{ student.phone or 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Year:</strong> {{ student.year }}</p>
+                            <p><strong>Semester:</strong> {{ student.semester }}</p>
+                            <p><strong>Enrolled:</strong> {{ student.enrollment_date.strftime('%B %d, %Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stats-card text-center" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                <div class="stats-number" id="present-count">
+                    {{ attendance_records|selectattr('status', 'equalto', 'present')|list|length }}
+                </div>
+                <div class="stats-label">
+                    <i class="fas fa-check me-2"></i>Present
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card text-center" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                <div class="stats-number" id="absent-count">
+                    {{ attendance_records|selectattr('status', 'equalto', 'absent')|list|length }}
+                </div>
+                <div class="stats-label">
+                    <i class="fas fa-times me-2"></i>Absent
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card text-center" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                <div class="stats-number" id="late-count">
+                    {{ attendance_records|selectattr('status', 'equalto', 'late')|list|length }}
+                </div>
+                <div class="stats-label">
+                    <i class="fas fa-clock me-2"></i>Late
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card text-center" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                <div class="stats-number" id="attendance-rate">
+                    {% set total = attendance_records|length %}
+                    {% if total > 0 %}
+                        {{ ((attendance_records|selectattr('status', 'equalto', 'present')|list|length / total) * 100)|round(1) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+                <div class="stats-label">
+                    <i class="fas fa-percentage me-2"></i>Attendance Rate
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Attendance History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if attendance_records %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Course</th>
+                                        <th>Status</th>
+                                        <th>Marked By</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in attendance_records|sort(attribute='date', reverse=true) %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ record.date.strftime('%B %d, %Y') }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ record.date.strftime('%A') }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ record.course.course_code if record.course else 'N/A' }}</span>
+                                            <br>
+                                            <small>{{ record.course.course_name if record.course else 'Course not found' }}</small>
+                                        </td>
+                                        <td>
+                                            {% if record.status == 'present' %}
+                                                <span class="badge bg-success">Present</span>
+                                            {% elif record.status == 'absent' %}
+                                                <span class="badge bg-danger">Absent</span>
+                                            {% elif record.status == 'late' %}
+                                                <span class="badge bg-warning">Late</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {% if record.marked_by_user %}
+                                                    {{ record.marked_by_user.username }}
+                                                {% else %}
+                                                    Faculty
+                                                {% endif %}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ record.timestamp.strftime('%I:%M %p') }}
+                                            </small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No attendance records found</h5>
+                            <p class="text-muted">Your attendance will appear here once faculty members start marking it.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stats-card {
+    transition: transform 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+}
+</style>
+{% endblock %}

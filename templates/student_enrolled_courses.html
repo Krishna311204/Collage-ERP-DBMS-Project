@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}My Enrolled Courses{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-book-open me-2"></i>My Enrolled Courses
+        </h1>
+        <a href="{{ url_for('student_attendance_history') }}" class="btn btn-info">
+            <i class="fas fa-chart-bar me-2"></i>View Attendance History
+        </a>
+    </div>
+
+    {% if enrollments %}
+    <div class="row">
+        {% for enrollment in enrollments %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        {{ enrollment.course_id | get_course_code }}
+                    </h6>
+                    <span class="badge {% if enrollment.status == 'active' %}bg-success{% elif enrollment.status == 'dropped' %}bg-danger{% else %}bg-secondary{% endif %}">
+                        {{ enrollment.status.title() }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ enrollment.course_id | get_course_name }}</h5>
+                    <p class="card-text text-muted">
+                        <i class="fas fa-building me-2"></i>{{ enrollment.course.department }}
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-calendar me-2"></i>Enrolled: {{ enrollment.enrollment_date.strftime('%B %d, %Y') }}
+                    </p>
+                    {% if enrollment.grade %}
+                    <div class="mb-3">
+                        <span class="badge bg-info fs-6">Grade: {{ enrollment.grade }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>{{ enrollment.course.credits }} Credits
+                        </small>
+                        <a href="{{ url_for('student_attendance_history') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i>View Attendance
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Enrollment Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ enrollments|length }}</h4>
+                                <p class="text-muted mb-0">Total Courses</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-success">{{ enrollments | selectattr('status', 'equalto', 'active') | list | length }}</h4>
+                                <p class="text-muted mb-0">Active</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-info">{{ enrollments | selectattr('grade') | list | length }}</h4>
+                                <p class="text-muted mb-0">Graded</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">{{ enrollments | selectattr('status', 'equalto', 'completed') | list | length }}</h4>
+                            <p class="text-muted mb-0">Completed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No courses enrolled</h5>
+        <p class="text-muted">You haven't been enrolled in any courses yet.</p>
+        <p class="text-muted">Please contact your administrator to get enrolled in courses.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
