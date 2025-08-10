@@ -115,11 +115,13 @@ def admin_dashboard():
     total_students = Student.query.count()
     total_courses = Course.query.count()
     total_faculty = User.query.filter_by(role='faculty').count()
+    total_enrollments = Enrollment.query.count()
     
     return render_template('admin_dashboard.html', 
                          total_students=total_students,
                          total_courses=total_courses,
-                         total_faculty=total_faculty)
+                         total_faculty=total_faculty,
+                         total_enrollments=total_enrollments)
 
 @app.route('/faculty/dashboard')
 @login_required
